@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Define as variáveis de cor para os dois temas */
+:root {
+  --background-color: #ffffff;
+  --text-color: #1a1a1a;
+  --card-bg-color: #f0f0f0;
+  --border-color: #e0e0e0;
+  --header-bg-color: #f7f7f7;
+  --accent-color: #8A2BE2; /* Um roxo vibrante */
+}
+
+[data-theme='dark'] {
+  --background-color: #1a1a1a;
+  --text-color: #f0f0f0;
+  --card-bg-color: #2c2c2c;
+  --border-color: #444;
+  --header-bg-color: #252525;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}

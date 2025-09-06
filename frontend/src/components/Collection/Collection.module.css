@@ -1,0 +1,98 @@
+/* src/components/Collection/Collection.module.css */
+
+/* O container principal da coleção agora não tem padding */
+.collection {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 30px;
+    overflow: hidden; /* Importante para o border-radius funcionar no header */
+}
+
+.collectionHeader {
+    background-color: var(--text-color);
+    padding: 6px 20px;
+    display: flex; /* Adicionado para alinhar o título e o botão */
+    justify-content: space-between; /* Adicionado */
+    align-items: center; /* Adicionado */
+    position: relative; /* <<< IMPORTANTE para o posicionamento do dropdown */
+}
+
+
+.collectionHeader h3 {
+    margin: 0;
+    color: var(--background-color); /* Cor do texto invertida */
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: left; /* Alinhado à esquerda */
+}
+
+/* <<< NOVO CONTAINER PARA O GRID >>> */
+.gridContainer {
+    padding: 20px; /* O padding que antes estava no .collection agora está aqui */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+
+.addCardButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 3 / 4.2;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 3rem;
+    color: var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.addCardButton:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background-color: rgba(138, 43, 226, 0.1);
+}
+
+.menuButton {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem; /* Aumenta o tamanho do emoji */
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%; /* Posiciona o menu logo abaixo do header */
+    right: 15px; /* Alinha com a direita do header */
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Garante que os botões fiquem com cantos arredondados */
+}
+
+.dropdownMenu button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.dropdownMenu button:hover {
+    background-color: var(--card-bg-color);
+}
+
+.dropdownMenu .deleteButton {
+    color: #e53e3e; /* Cor vermelha para a exclusão */
+}

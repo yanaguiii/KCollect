@@ -1,0 +1,89 @@
+/* src/components/Header/Header.module.css */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: var(--header-bg-color);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.leftSection, .rightSection {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.title {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--text-color);
+}
+
+/* Estilos base para botões e o seletor */
+.actionButton, .themeButton {
+    background-color: var(--card-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 8px; /* Cantos arredondados */
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+/* Estilos específicos para o seletor, herdando e sobrescrevendo o necessário */
+.wishlistSelector {
+    /* Primeiro, removemos o estilo nativo do navegador */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* Estilos base (iguais aos botões) */
+    background-color: var(--card-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 8px; /* Cantos arredondados */
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+
+    /* Agora, adicionamos nossa seta customizada como imagem de fundo */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em;
+    padding-right: 2.5rem; /* Adiciona espaço para a seta não sobrepor o texto */
+}
+
+/* Efeito hover para todos os elementos */
+.actionButton:hover, .themeButton:hover, .wishlistSelector:hover {
+    border-color: var(--accent-color);
+    background-color: var(--background-color);
+}
+
+/* src/components/Header/Header.module.css */
+/* ... adicione ao final do arquivo ... */
+
+.wishlistActions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Para diferenciar um pouco os botões de ação */
+.editButton:hover {
+    border-color: #3b82f6; /* Azul */
+}
+
+.deleteButton:hover {
+    border-color: #ef4444; /* Vermelho */
+    color: #ef4444;
+}

@@ -1,0 +1,35 @@
+/* src/components/Photocard/Photocard.module.css */
+
+.cardContainer {
+    aspect-ratio: 3 / 4.2;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+    /* A borda padrão agora é transparente */
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    background-color: var(--card-bg-color); /* Cor de fundo para o container */
+}
+
+.cardContainer:hover {
+    transform: translateY(-5px);
+}
+
+.cardImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6; /* Todos começam um pouco opacos */
+    transition: opacity 0.3s ease;
+}
+
+/* Quando o card é possuído, a mágica acontece */
+.owned {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px var(--accent-color);
+}
+
+/* A imagem dentro de um card possuído fica 100% opaca */
+.owned .cardImage {
+    opacity: 1;
+}

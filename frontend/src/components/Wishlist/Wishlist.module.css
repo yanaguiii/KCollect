@@ -1,0 +1,54 @@
+.wishlistContainer {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.header h2 {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--accent-color);
+}
+
+/* <<< NOVOS ESTILOS >>> */
+.artistInfo {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.artistPhoto {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%; /* Deixa a foto redonda */
+    object-fit: cover; /* Garante que a foto não fique distorcida */
+    border: 2px solid var(--accent-color);
+}
+/* <<< FIM DOS NOVOS ESTILOS >>> */
+
+
+.actionButton {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.emptyMessage {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #888;
+    padding: 50px;
+}

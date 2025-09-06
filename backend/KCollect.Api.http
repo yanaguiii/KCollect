@@ -1,0 +1,6 @@
+@KCollect.Api_HostAddress = http://localhost:5062
+
+GET {{KCollect.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
