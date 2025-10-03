@@ -1,9 +1,3 @@
-Com certeza\! Você fez um progresso imenso, transformando o projeto de uma aplicação puramente de frontend para uma aplicação full-stack. O `README.md` precisa refletir essa evolução para que qualquer pessoa (incluindo você no futuro ou um recrutador) entenda a arquitetura completa do projeto.
-
-Aqui está uma versão atualizada do seu `README.md`, reescrita para ser condizente com o estado atual do projeto.
-
------
-
 # K-Collect: Wishlist Viewer
 
 Sua coleção de photocards de K-pop, organizada do seu jeito. Uma aplicação full-stack com backend em C\# .NET e frontend em React.
