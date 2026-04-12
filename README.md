@@ -56,7 +56,7 @@ Abra um terminal e execute os seguintes comandos:
 
 ```bash
 # Navegue para a pasta do backend
-cd backend
+cd api
 
 # Inicie o servidor da API
 dotnet run
@@ -70,13 +70,14 @@ Abra um **novo terminal** (sem fechar o primeiro) e execute os seguintes comando
 
 ```bash
 # Navegue para a pasta do frontend (a partir da raiz do projeto)
-cd frontend
+cd app
 
 # Instale as dependências
 npm install
 
 # Inicie o servidor de desenvolvimento
 npm run dev
+]]
 ```
 
 O frontend será aberto no seu navegador, geralmente em `http://localhost:5173`. A aplicação agora está totalmente funcional e se comunicando com o seu backend.
