@@ -1,0 +1,174 @@
+/* ─── Layout ─────────────────────────────────────────── */
+.landing {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #08080f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ─── Ambient orb ────────────────────────────────────── */
+.orb {
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(138, 43, 226, 0.38) 0%,
+    rgba(90, 20, 160, 0.16) 50%,
+    transparent 70%
+  );
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+/* ─── Grain overlay ──────────────────────────────────── */
+.grain {
+  position: absolute;
+  inset: 0;
+  /* inline SVG noise */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  pointer-events: none;
+}
+
+/* ─── Content stack ──────────────────────────────────── */
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+}
+
+/* ─── Brand row ──────────────────────────────────────── */
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.brand {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(3.2rem, 8vw, 5.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1;
+}
+
+.brandAccent {
+  color: #8a2be2;
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  animation: accentPulse 3.2s ease-in-out infinite;
+}
+
+@keyframes accentPulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1;    }
+}
+
+/* ─── Tagline ─────────────────────────────────────────── */
+.tagline {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(0.78rem, 1.4vw, 0.92rem);
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin: 0 0 18px 0;
+}
+
+/* ─── Menu ───────────────────────────────────────────── */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 390px;
+}
+
+/* ─── Menu button ─────────────────────────────────────── */
+.menuBtn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition:
+    transform  0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.22s ease,
+    background 0.22s ease,
+    color  0.22s ease;
+}
+
+/* shine sweep on hover */
+.menuBtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(138, 43, 226, 0.14), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.menuBtn:hover {
+  transform: translateX(7px);
+  border-color: rgba(138, 43, 226, 0.55);
+  background: rgba(138, 43, 226, 0.07);
+  color: #ffffff;
+}
+.menuBtn:hover::before { opacity: 1; }
+
+.menuBtn:active {
+  transform: translateX(4px) scale(0.985);
+}
+
+.menuBtn:hover .btnArrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── Button parts ────────────────────────────────────── */
+.btnIcon {
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #8a2be2;
+  font-size: 1.05rem;
+}
+
+.btnLabel {
+  flex: 1;
+}
+
+.btnArrow {
+  opacity: 0;
+  transform: translateX(-10px);
+  color: #8a2be2;
+  font-size: 1rem;
+  transition:
+    opacity   0.22s ease,
+    transform 0.22s ease;
+}

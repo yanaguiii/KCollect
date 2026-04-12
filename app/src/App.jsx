@@ -1,341 +1,282 @@
-import { useState, useEffect } from 'react';
-import Header from './components/Header/Header';
-import Wishlist from './components/Wishlist/Wishlist';
-import AddWishlistModal from './components/AddWishlistModal/AddWishlistModal';
-import EditCollectionModal from './components/EditCollectionModal/EditCollectionModal';
-import DeleteConfirmationModal from './components/DeleteConfirmationModal/DeleteConfirmationModal';
-import InputModal from './components/InputModal/InputModal';
-import './App.css';
-import EditWishlistModal from "./components/EditWishlistModal/EditWishlistModal.jsx";
+import { useState, useEffect, useCallback } from 'react';
+import gsap from 'gsap';
+import Lenis from 'lenis';
 
-const API_URL = "http://localhost:5062"
+import LandingPage              from './components/LandingPage/LandingPage';
+import CollectionPickerOverlay  from './components/CollectionPickerOverlay/CollectionPickerOverlay';
+import Header                   from './components/Header/Header';
+import Wishlist                 from './components/Wishlist/Wishlist';
+import AddWishlistModal         from './components/AddWishlistModal/AddWishlistModal';
+import EditCollectionModal      from './components/EditCollectionModal/EditCollectionModal';
+import DeleteConfirmationModal  from './components/DeleteConfirmationModal/DeleteConfirmationModal';
+import InputModal               from './components/InputModal/InputModal';
+import EditWishlistModal        from './components/EditWishlistModal/EditWishlistModal.jsx';
+
+import './App.css';
+
+const API_URL = 'http://localhost:5062';
 
 function App() {
+  // ── View state ────────────────────────────────────────────────
+  // 'landing' = main menu   |   'main' = collections view
+  const [appView, setAppView]                       = useState('landing');
+  const [isCollectionPickerOpen, setCollectionPickerOpen] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetWishlistId, setTargetWishlistId] = useState(null);
-  const [wishlists, setWishlists] = useState([]);
+  // ── Data state ────────────────────────────────────────────────
+  const [wishlists,        setWishlists]        = useState([]);
   const [activeWishlistId, setActiveWishlistId] = useState(null);
-  const [theme, setTheme] = useState('light');
+  const [theme,            setTheme]            = useState('light');
+
+  // ── Modal state ───────────────────────────────────────────────
+  const [isModalOpen,            setIsModalOpen]            = useState(false);
+  const [targetWishlistId,       setTargetWishlistId]       = useState(null);
   const [isAddWishlistModalOpen, setIsAddWishlistModalOpen] = useState(false);
-  const [editingCollection, setEditingCollection] = useState(null);
-  const [deletingCollection, setDeletingCollection] = useState(null);
-  const [editingWishlist, setEditingWishlist] = useState(null);
-  const [deletingWishlist, setDeletingWishlist] = useState(null);
+  const [editingCollection,      setEditingCollection]      = useState(null);
+  const [deletingCollection,     setDeletingCollection]     = useState(null);
+  const [editingWishlist,        setEditingWishlist]        = useState(null);
+  const [deletingWishlist,       setDeletingWishlist]       = useState(null);
 
-  
-  
-  // --- EFEITOS (useEffect) ---
-
-    useEffect(() => {
-        document.body.setAttribute('data-theme', theme);
-    }, [theme]);
-    
-    
-    useEffect(() => {
-        // Função assíncrona para buscar os dados
-        const fetchWishlists = async () => {
-            try {
-                const response = await fetch(`${API_URL}/api/wishlists`);
-                const data = await response.json();
-                setWishlists(data);
-
-                // Lógica para definir a primeira wishlist como ativa
-                if (data.length > 0) {
-                    setActiveWishlistId(data[0].id);
-                }
-            } catch (error) {
-                console.error("Falha ao buscar dados da API:", error);
-            }
-        };
-
-        fetchWishlists();
-    }, []); // O array vazio [] garante que isso só rode uma vez.
-
-
-
-
-  // --- FUNÇÕES DE MANIPULAÇÃO ---
-    
-  const handleAddWishlist = async (artistName, photoFile) => {
-    let photoUrl = ''; // Começa com uma URL vazia.
-    if (photoFile) {
-      photoUrl = URL.createObjectURL(photoFile);
-    }
-
-    // Cria o novo objeto da wishlist com os dados recebidos.
-    const newWishlist = {
-      id: `wish_${Date.now()}`,
-      artistName: artistName,
-      artistPhotoUrl: photoUrl,
-      collections: []
+  // ── Lenis smooth scroll ───────────────────────────────────────
+  useEffect(() => {
+    const lenis = new Lenis({ duration: 1.1, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    const tick  = (time) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
+    return () => {
+      gsap.ticker.remove(tick);
+      lenis.destroy();
     };
+  }, []);
 
+  // ── Theme sync ────────────────────────────────────────────────
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  // ── Initial data fetch ────────────────────────────────────────
+  useEffect(() => {
+    const fetchWishlists = async () => {
       try {
-          // 2. Faça a chamada POST para a API
-          const response = await fetch(`${API_URL}/api/wishlists`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(newWishlist),
-          });
-
-          if (response.ok) {
-              // 3. Se deu certo, adicione a nova wishlist (retornada pela API) ao estado local
-              const createdWishlist = await response.json();
-              setWishlists([...wishlists, createdWishlist]);
-              setActiveWishlistId(createdWishlist.id);
-              setIsAddWishlistModalOpen(false);
-          } else {
-              alert("Falha ao criar a wishlist.");
-          }
-      } catch (error) {
-          console.error("Erro ao criar wishlist:", error);
+        const res  = await fetch(`${API_URL}/api/wishlists`);
+        const data = await res.json();
+        setWishlists(data);
+        if (data.length > 0) setActiveWishlistId(data[0].id);
+      } catch (err) {
+        console.error('Falha ao buscar dados da API:', err);
       }
+    };
+    fetchWishlists();
+  }, []);
+
+  // ── Navigation helpers ────────────────────────────────────────
+  const goToMain = useCallback((wishlistId) => {
+    if (wishlistId) setActiveWishlistId(wishlistId);
+    setCollectionPickerOpen(false);
+    setAppView('main');
+  }, []);
+
+  const goToLanding = useCallback(() => setAppView('landing'), []);
+
+  // ── Landing page handlers ─────────────────────────────────────
+  const handleLandingNewCollection  = () => setIsAddWishlistModalOpen(true);
+  const handleLandingOpenCollection = () => setCollectionPickerOpen(true);
+  const handleLandingProfile        = () => { /* TODO: Perfil do usuário */ };
+  const handleLandingSettings       = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+
+  // ── Wishlist CRUD ─────────────────────────────────────────────
+  const handleAddWishlist = async (artistName, photoFile) => {
+    const photoUrl = photoFile ? URL.createObjectURL(photoFile) : '';
+    const newWishlist = { id: `wish_${Date.now()}`, artistName, artistPhotoUrl: photoUrl, collections: [] };
+
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(newWishlist),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setWishlists(prev => [...prev, created]);
+        setIsAddWishlistModalOpen(false);
+        goToMain(created.id);
+      } else {
+        alert('Falha ao criar a coleção.');
+      }
+    } catch (err) {
+      console.error('Erro ao criar coleção:', err);
+    }
   };
 
-    const handleEditWishlistName = async (wishlistId, newName) => { // 1. Transforme em async
-                                                                    // Encontra a wishlist que estamos editando para enviar o objeto completo
-        const wishlistToUpdate = wishlists.find(w => w.id === wishlistId);
-        if (!wishlistToUpdate) return;
-
-        const updatedWishlistData = { ...wishlistToUpdate, artistName: newName };
-
-        try {
-            // 2. Faça a chamada PUT para a API
-            const response = await fetch(`${API_URL}/api/wishlists/${wishlistId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedWishlistData),
-            });
-
-            if (response.ok) {
-                // 3. Se deu certo, atualize o estado local
-                const updatedWishlists = wishlists.map(w =>
-                    w.id === wishlistId ? { ...w, artistName: newName } : w
-                );
-                setWishlists(updatedWishlists);
-                setEditingWishlist(null); // Fecha o modal
-            } else {
-                alert("Falha ao editar a wishlist.");
-            }
-        } catch (error) {
-            console.error("Erro ao editar wishlist:", error);
-        }
-    };
-  
-  
-    const handleDeleteWishlist = async (wishlistId) => {
-        try {
-            // 1. Faz a chamada DELETE para a API
-            const response = await fetch(`${API_URL}/api/wishlists/${wishlistId}`, {
-                method: 'DELETE',
-            });
-
-            // 2. Se a API respondeu com sucesso...
-            if (response.ok) {
-                // 3. aí sim atualizamos o estado local para refletir a mudança na UI.
-                const updatedWishlists = wishlists.filter(w => w.id !== wishlistId);
-                setWishlists(updatedWishlists);
-
-                if (activeWishlistId === wishlistId) {
-                    const newActiveId = updatedWishlists.length > 0 ? updatedWishlists[0].id : null;
-                    setActiveWishlistId(newActiveId);
-                }
-            } else {
-                // Se der erro, podemos notificar o usuário
-                alert("Falha ao deletar a wishlist.");
-            }
-        } catch (error) {
-            console.error("Erro ao deletar wishlist:", error);
-        }
-
-        setDeletingWishlist(null);
-    };
-
-
-  const handleAddCollection = async (wishlistId) => {
-      setTargetWishlistId(wishlistId); // Guarda o ID da wishlist alvo
-      setIsModalOpen(true); // Abre o modal
+  const handleEditWishlistName = async (wishlistId, newName) => {
+    const w = wishlists.find(w => w.id === wishlistId);
+    if (!w) return;
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists/${wishlistId}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ ...w, artistName: newName }),
+      });
+      if (res.ok) {
+        setWishlists(prev => prev.map(x => x.id === wishlistId ? { ...x, artistName: newName } : x));
+        setEditingWishlist(null);
+      } else {
+        alert('Falha ao editar a coleção.');
+      }
+    } catch (err) {
+      console.error('Erro ao editar coleção:', err);
+    }
   };
 
+  const handleDeleteWishlist = async (wishlistId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists/${wishlistId}`, { method: 'DELETE' });
+      if (res.ok) {
+        const updated = wishlists.filter(w => w.id !== wishlistId);
+        setWishlists(updated);
+        if (activeWishlistId === wishlistId) {
+          setActiveWishlistId(updated.length > 0 ? updated[0].id : null);
+        }
+        if (updated.length === 0) goToLanding();
+      } else {
+        alert('Falha ao deletar a coleção.');
+      }
+    } catch (err) {
+      console.error('Erro ao deletar coleção:', err);
+    }
+    setDeletingWishlist(null);
+  };
+
+  // ── Collection CRUD ───────────────────────────────────────────
+  const handleAddCollection = (wishlistId) => {
+    setTargetWishlistId(wishlistId);
+    setIsModalOpen(true);
+  };
 
   const handleConfirmAddCollection = async (collectionName) => {
-      if(!targetWishlistId) return;
-
-      const newCollection = {
-          id: `coll_${Date.now()}`,
-          name: collectionName,
-          cards: [],
-      };
-      try{
-          const response = await fetch(`${API_URL}/api/wishlists/${targetWishlistId}/collections`, {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify(newCollection),
-          });
-          if (response.ok) {
-              const addedCollection = await response.json();
-              const updatedWishlists = wishlists.map((wishlist) => {
-                  if (wishlist.id === targetWishlistId) {
-                      return{
-                          ...wishlist,
-                          collections: [...wishlist.collections, addedCollection],
-                      };
-                  }
-                  return wishlist;
-              });
-              setWishlists(updatedWishlists);
-          }else{
-              alert("Falha ao adicionar a coleção.");
-          }
-      }catch(error) {
-          console.error("Erro ao adicionar coleção:", error);
+    if (!targetWishlistId) return;
+    const newCollection = { id: `coll_${Date.now()}`, name: collectionName, cards: [] };
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists/${targetWishlistId}/collections`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(newCollection),
+      });
+      if (res.ok) {
+        const added = await res.json();
+        setWishlists(prev => prev.map(w =>
+          w.id === targetWishlistId ? { ...w, collections: [...w.collections, added] } : w
+        ));
+      } else {
+        alert('Falha ao adicionar o álbum.');
       }
-      setTargetWishlistId(null);
-      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Erro ao adicionar álbum:', err);
+    }
+    setTargetWishlistId(null);
+    setIsModalOpen(false);
   };
 
+  const handleEditCollectionName = async (wishlistId, collectionId, newName) => {
+    const w = wishlists.find(w => w.id === wishlistId);
+    const c = w?.collections.find(c => c.id === collectionId);
+    if (!w || !c) return;
+    const updated = { ...c, name: newName };
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists/${wishlistId}/collections/${collectionId}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(updated),
+      });
+      if (res.ok) {
+        setWishlists(prev => prev.map(w =>
+          w.id === wishlistId
+            ? { ...w, collections: w.collections.map(c => c.id === collectionId ? updated : c) }
+            : w
+        ));
+        setEditingCollection(null);
+      } else {
+        alert('Falha ao editar o álbum.');
+      }
+    } catch (err) {
+      console.error('Erro ao editar álbum:', err);
+    }
+  };
 
-  const handleDeleteCollection = async(wishlistId, collectionId) => {
-    try{
-        const response = await fetch(`${API_URL}/api/wishlists/${wishlistId}/collections/${collectionId}`, {
-            method: 'DELETE',
-        });
-        if (response.ok) {
-            setWishlists(prev => prev.map(w => {
-                if(w.id === wishlistId) {
-                    const updatedCollections = w.collections.filter(c => c.id !== collectionId);
-                    return { ...w, collections: updatedCollections };
-                }
-                return w;
-            }));
-        } else {
-            alert("Falha ao deletar coleção");
-        }
-    }catch(error) {
-        console.error("Erro ao deletar coleção:", error);
+  const handleDeleteCollection = async (wishlistId, collectionId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists/${wishlistId}/collections/${collectionId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setWishlists(prev => prev.map(w =>
+          w.id === wishlistId
+            ? { ...w, collections: w.collections.filter(c => c.id !== collectionId) }
+            : w
+        ));
+      } else {
+        alert('Falha ao deletar o álbum.');
+      }
+    } catch (err) {
+      console.error('Erro ao deletar álbum:', err);
     }
     setDeletingCollection(null);
   };
 
-  const handleEditCollectionName = async (wishlistId, collectionId, newName) => {
-    const wishlist = wishlists.find(w => w.id === wishlistId);
-    if (!wishlist) return;
- 
-    const collectionToUpdate = wishlist.collections.find(c => c.id === collectionId);
-    if (!collectionToUpdate) return;
-    
-    const updatedCollection = {...collectionToUpdate, name: newName};
-    
-    try{
-        const response = await fetch(`${API_URL}/api/wishlists/${wishlistId}/collections/${collectionId}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(updatedCollection),
-        });
-        
-        if(response.ok){
-            setWishlists(prev => prev.map(w => {
-                if(w.id === wishlistId) {
-                    const updatedCollections = w.collections.map(c => {
-                        if(c.id === collectionId) {
-                            return updatedCollection;
-                        }
-                        return c;
-                    });
-                    return { ...w, collections: updatedCollections };
-                    
-                }
-                return w;
-            }));
-        } else{
-            alert("Falha ao editar o nome da coleção");
-        }
-    }catch(error) {
-        console.error("Erro ao editar nome da coleção:", error);
+  // ── Card CRUD ─────────────────────────────────────────────────
+  const handleAddCard = async (wishlistId, collectionId, imageFile) => {
+    const newCard = { id: `card_${Date.now()}`, imageUrl: URL.createObjectURL(imageFile), owned: true };
+    try {
+      const res = await fetch(`${API_URL}/api/wishlists/${wishlistId}/collections/${collectionId}/cards`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(newCard),
+      });
+      if (res.ok) {
+        const added = await res.json();
+        setWishlists(prev => prev.map(w =>
+          w.id === wishlistId
+            ? { ...w, collections: w.collections.map(c =>
+                c.id === collectionId ? { ...c, cards: [...c.cards, added] } : c
+              )}
+            : w
+        ));
+      } else {
+        alert('Falha ao adicionar o card.');
+      }
+    } catch (err) {
+      console.error('Erro ao adicionar card:', err);
     }
-    
-    setEditingCollection(null);
   };
-
-    const handleAddCard = async (wishlistId, collectionId, imageFile) => { // 1. Torna a função async
-                                                                           // A criação da URL da imagem continua sendo feita no frontend por enquanto.
-        const imageUrl = URL.createObjectURL(imageFile);
-
-        // Cria o objeto do novo card para enviar à API
-        const newCard = {
-            id: `card_${Date.now()}`,
-            imageUrl: imageUrl,
-            owned: true
-        };
-
-        try {
-            // 2. Faz a chamada POST para o endpoint de cards que criamos
-            const response = await fetch(`${API_URL}/api/wishlists/${wishlistId}/collections/${collectionId}/cards`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newCard),
-            });
-
-            if (response.ok) {
-                // 3. Se a API confirmou, atualiza o estado local do React para exibir o novo card
-                const addedCard = await response.json();
-                setWishlists(prev => prev.map(w => {
-                    if (w.id === wishlistId) {
-                        const updatedCollections = w.collections.map(c => {
-                            if (c.id === collectionId) {
-                                // Adiciona o card retornado pela API à coleção correta
-                                return { ...c, cards: [...c.cards, addedCard] };
-                            }
-                            return c;
-                        });
-                        return { ...w, collections: updatedCollections };
-                    }
-                    return w;
-                }));
-            } else {
-                alert("Falha ao adicionar o card.");
-            }
-        } catch (error) {
-            console.error("Erro ao adicionar card:", error);
-        }
-    };
-
 
   const handleToggleCardOwned = (wishlistId, collectionId, cardId) => {
-    setWishlists(prev => prev.map(w => {
-      if (w.id === wishlistId) {
-        const updatedCollections = w.collections.map(c => {
-          if (c.id === collectionId) {
-            const updatedCards = c.cards.map(card =>
-                card.id === cardId ? { ...card, owned: !card.owned } : card
-            );
-            return { ...c, cards: updatedCards };
-          }
-          return c;
-        });
-        return { ...w, collections: updatedCollections };
-      }
-      return w;
-    }));
+    setWishlists(prev => prev.map(w =>
+      w.id === wishlistId
+        ? { ...w, collections: w.collections.map(c =>
+            c.id === collectionId
+              ? { ...c, cards: c.cards.map(card => card.id === cardId ? { ...card, owned: !card.owned } : card) }
+              : c
+          )}
+        : w
+    ));
   };
 
-
-  // Encontra a wishlist atualmente ativa para ser exibida.
   const activeWishlist = wishlists.find(w => w.id === activeWishlistId);
 
-
-  // --- RENDERIZAÇÃO DO COMPONENTE ---
-
+  // ── Render ────────────────────────────────────────────────────
   return (
-      <>
-        <Header
+    <>
+      {/* ── Landing page ──────────────────────────────── */}
+      {appView === 'landing' && (
+        <LandingPage
+          onNewCollection={handleLandingNewCollection}
+          onOpenCollection={handleLandingOpenCollection}
+          onProfile={handleLandingProfile}
+          onSettings={handleLandingSettings}
+        />
+      )}
+
+      {/* ── Collections / main view ───────────────────── */}
+      {appView === 'main' && (
+        <>
+          <Header
             theme={theme}
             setTheme={setTheme}
             wishlists={wishlists}
@@ -344,94 +285,93 @@ function App() {
             onAddWishlist={() => setIsAddWishlistModalOpen(true)}
             onOpenEditWishlistModal={() => setEditingWishlist(activeWishlist)}
             onOpenDeleteWishlistModal={() => setDeletingWishlist(activeWishlist)}
-        />
-        <main>
-          {activeWishlist ? (
+            onBackToLanding={goToLanding}
+          />
+          <main>
+            {activeWishlist ? (
               <Wishlist
-                  key={activeWishlist.id}
-                  wishlist={activeWishlist}
-                  onOpenEditModal={(wishlistId, collectionId) => {
-                    const collection = wishlists.find(w => w.id === wishlistId)?.collections.find(c => c.id === collectionId);
-                    if(collection) setEditingCollection({wishlistId, ...collection});
-                  }}
-                  onOpenDeleteModal={(wishlistId, collectionId) => {
-                    const collection = wishlists.find(w => w.id === wishlistId)?.collections.find(c => c.id === collectionId);
-                    if(collection) setDeletingCollection({wishlistId, ...collection});
-                  }}
-
-                  onAddCollection={handleAddCollection}
-                  onAddCard={handleAddCard}
-                  onToggleCardOwned={handleToggleCardOwned}
+                key={activeWishlist.id}
+                wishlist={activeWishlist}
+                onOpenEditModal={(wId, cId) => {
+                  const c = wishlists.find(w => w.id === wId)?.collections.find(c => c.id === cId);
+                  if (c) setEditingCollection({ wishlistId: wId, ...c });
+                }}
+                onOpenDeleteModal={(wId, cId) => {
+                  const c = wishlists.find(w => w.id === wId)?.collections.find(c => c.id === cId);
+                  if (c) setDeletingCollection({ wishlistId: wId, ...c });
+                }}
+                onAddCollection={handleAddCollection}
+                onAddCard={handleAddCard}
+                onToggleCardOwned={handleToggleCardOwned}
               />
-          ) : (
-              <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                <h2>Bem-vindo ao K-Collect!</h2>
-                <p>Crie sua primeira wishlist clicando no botão "Adicionar Wishlist" no topo.</p>
+            ) : (
+              <div style={{ textAlign: 'center', marginTop: '60px' }}>
+                <h2>Nenhuma coleção encontrada</h2>
+                <p>Crie uma nova coleção pelo menu principal.</p>
               </div>
-          )}
-        </main>
+            )}
+          </main>
+        </>
+      )}
 
-        {/* --- Seção de Modais --- */}
-
-        {/* Modal para adicionar Wishlist (que você já tinha) */}
-        {isAddWishlistModalOpen && (
-            <AddWishlistModal
-                onClose={() => setIsAddWishlistModalOpen(false)}
-                onSave={handleAddWishlist}
-            />
-        )}
-
-        {/* Modal para editar Coleção (que você já tinha) */}
-        {editingCollection && (
-            <EditCollectionModal
-                collection={editingCollection}
-                onClose={() => setEditingCollection(null)}
-                onSave={handleEditCollectionName}
-            />
-        )}
-
-        {/* Modal para deletar Coleção */}
-        {deletingCollection && (
-            <DeleteConfirmationModal
-                item={deletingCollection} // Passe o objeto da coleção
-                itemType="coleção"        // Diga o tipo
-                onClose={() => setDeletingCollection(null)}
-                // Passe a função exata a ser executada
-                onConfirm={() => handleDeleteCollection(deletingCollection.wishlistId, deletingCollection.id)}
-            />
-        )}
-
-        {/* Modal para editar a Wishlist */}
-        {editingWishlist && (
-            <EditWishlistModal // O componente que corrigimos no Passo 2
-                wishlist={editingWishlist}
-                onClose={() => setEditingWishlist(null)}
-                onSave={(newName) => handleEditWishlistName(editingWishlist.id, newName)}
-            />
-        )}
-
-        {/* Modal para deletar a Wishlist */}
-        {deletingWishlist && (
-            <DeleteConfirmationModal
-                // Passe o objeto da wishlist adaptado
-                item={{ name: deletingWishlist.artistName }}
-                itemType="wishlist" // Diga o tipo
-                onClose={() => setDeletingWishlist(null)}
-                // Passe a função exata a ser executada
-                onConfirm={() => handleDeleteWishlist(deletingWishlist.id)}
-            />
-        )}
-
-        {/*
-          Ele será controlado pelo estado 'isModalOpen' que criamos.
-        */}
-        <InputModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={handleConfirmAddCollection}
-            title="Adicionar Nova Coleção"
+      {/* ── Collection picker overlay ─────────────────── */}
+      {isCollectionPickerOpen && (
+        <CollectionPickerOverlay
+          wishlists={wishlists}
+          onSelect={goToMain}
+          onClose={() => setCollectionPickerOpen(false)}
         />
-      </>
+      )}
+
+      {/* ── Modals ────────────────────────────────────── */}
+      {isAddWishlistModalOpen && (
+        <AddWishlistModal
+          onClose={() => setIsAddWishlistModalOpen(false)}
+          onSave={handleAddWishlist}
+        />
+      )}
+
+      {editingCollection && (
+        <EditCollectionModal
+          collection={editingCollection}
+          onClose={() => setEditingCollection(null)}
+          onSave={handleEditCollectionName}
+        />
+      )}
+
+      {deletingCollection && (
+        <DeleteConfirmationModal
+          item={deletingCollection}
+          itemType="álbum"
+          onClose={() => setDeletingCollection(null)}
+          onConfirm={() => handleDeleteCollection(deletingCollection.wishlistId, deletingCollection.id)}
+        />
+      )}
+
+      {editingWishlist && (
+        <EditWishlistModal
+          wishlist={editingWishlist}
+          onClose={() => setEditingWishlist(null)}
+          onSave={(newName) => handleEditWishlistName(editingWishlist.id, newName)}
+        />
+      )}
+
+      {deletingWishlist && (
+        <DeleteConfirmationModal
+          item={{ name: deletingWishlist.artistName }}
+          itemType="coleção"
+          onClose={() => setDeletingWishlist(null)}
+          onConfirm={() => handleDeleteWishlist(deletingWishlist.id)}
+        />
+      )}
+
+      <InputModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleConfirmAddCollection}
+        title="Adicionar Álbum"
+      />
+    </>
   );
 }
 

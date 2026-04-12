@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\lucas\\Desktop\\Programação tryhard\\KCollect\\backend\\KCollect.Api.csproj": {}
+    "D:\\Programação\\PersonalProjects\\KCollect\\api\\KCollect.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\lucas\\Desktop\\Programação tryhard\\KCollect\\backend\\KCollect.Api.csproj": {
+    "D:\\Programação\\PersonalProjects\\KCollect\\api\\KCollect.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\lucas\\Desktop\\Programação tryhard\\KCollect\\backend\\KCollect.Api.csproj",
+        "projectUniqueName": "D:\\Programação\\PersonalProjects\\KCollect\\api\\KCollect.Api.csproj",
         "projectName": "KCollect.Api",
-        "projectPath": "C:\\Users\\lucas\\Desktop\\Programação tryhard\\KCollect\\backend\\KCollect.Api.csproj",
+        "projectPath": "D:\\Programação\\PersonalProjects\\KCollect\\api\\KCollect.Api.csproj",
         "packagesPath": "C:\\Users\\lucas\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\lucas\\Desktop\\Programação tryhard\\KCollect\\backend\\obj\\",
+        "outputPath": "D:\\Programação\\PersonalProjects\\KCollect\\api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\lucas\\AppData\\Roaming\\NuGet\\NuGet.Config"

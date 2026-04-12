@@ -31,3 +31,36 @@ C:\Users\lucas\Desktop\Programação tryhard\KCollect\backend\obj\Debug\net9.0\r
 C:\Users\lucas\Desktop\Programação tryhard\KCollect\backend\obj\Debug\net9.0\KCollect.Api.pdb
 C:\Users\lucas\Desktop\Programação tryhard\KCollect\backend\obj\Debug\net9.0\KCollect.Api.genruntimeconfig.cache
 C:\Users\lucas\Desktop\Programação tryhard\KCollect\backend\obj\Debug\net9.0\ref\KCollect.Api.dll
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\appsettings.Development.json
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\appsettings.json
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\KCollect.Api.staticwebassets.endpoints.json
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\KCollect.Api.exe
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\KCollect.Api.deps.json
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\KCollect.Api.runtimeconfig.json
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\KCollect.Api.dll
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\KCollect.Api.pdb
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
+D:\Programação\PersonalProjects\KCollect\api\bin\Debug\net9.0\Microsoft.OpenApi.dll
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.csproj.AssemblyReference.cache
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\rpswa.dswa.cache.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.AssemblyInfoInputs.cache
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.AssemblyInfo.cs
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.csproj.CoreCompileInputs.cache
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.MvcApplicationPartsAssemblyInfo.cs
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.MvcApplicationPartsAssemblyInfo.cache
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.sourcelink.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\rjimswa.dswa.cache.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\scopedcss\bundle\KCollect.Api.styles.css
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\staticwebassets.build.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\staticwebassets.build.json.cache
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\staticwebassets.development.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.50AD7036.Up2Date
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.dll
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\refint\KCollect.Api.dll
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.pdb
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\KCollect.Api.genruntimeconfig.cache
+D:\Programação\PersonalProjects\KCollect\api\obj\Debug\net9.0\ref\KCollect.Api.dll
