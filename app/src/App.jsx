@@ -270,6 +270,7 @@ function App() {
           onOpenCollection={handleLandingOpenCollection}
           onProfile={handleLandingProfile}
           onSettings={handleLandingSettings}
+          blurred={isCollectionPickerOpen || isAddWishlistModalOpen}
         />
       )}
 

@@ -9,7 +9,7 @@ const MENU_ITEMS = [
   { label: 'Configurações',  icon: '⚙', key: 'settings' },
 ];
 
-function LandingPage({ onNewCollection, onOpenCollection, onProfile, onSettings }) {
+function LandingPage({ onNewCollection, onOpenCollection, onProfile, onSettings, blurred }) {
   const titleRef   = useRef(null);
   const taglineRef = useRef(null);
   const menuRef    = useRef(null);
@@ -56,7 +56,7 @@ function LandingPage({ onNewCollection, onOpenCollection, onProfile, onSettings 
   }, []);
 
   return (
-    <div className={styles.landing}>
+    <div className={`${styles.landing} ${blurred ? styles.blurred : ''}`}>
       {/* Ambient orb */}
       <div className={styles.orb} ref={orbRef} />
       {/* Subtle grain texture */}

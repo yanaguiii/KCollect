@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import styles from './CollectionPickerOverlay.module.css';
 
 // ── System default backgrounds ──────────────────────────────────
-// To add real images: { id:'img-1', label:'Name', value:'/backgrounds/bg1.jpg', isImage:true }
+// Add real images later: { id:'img-1', label:'Name', value:'/backgrounds/bg1.jpg', isImage:true }
 export const SYSTEM_BACKGROUNDS = [
   { id: 'g1', label: 'Roxo',       value: 'linear-gradient(135deg,#6B0AC9 0%,#C850C0 100%)' },
   { id: 'g2', label: 'Noite',      value: 'linear-gradient(135deg,#0d0d2b 0%,#2d1b69 100%)' },
@@ -23,102 +23,165 @@ function loadBackgrounds() {
 function saveBackgrounds(map) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
 }
-function bgStyle(raw) {
-  if (!raw)             return { background: SYSTEM_BACKGROUNDS[0].value };
+// Returns inline style for a card that has a saved background.
+// Returns null when no bg is set → the card shows as pure glass.
+function resolvedBgStyle(raw) {
+  if (!raw) return null;
   if (raw.startsWith('url(')) return { backgroundImage: raw, backgroundSize: 'cover', backgroundPosition: 'center' };
   return { background: raw };
 }
 
-// ── Carousel step distance (responsive) ────────────────────────
-const stepX = () => Math.min(window.innerWidth * 0.4, 520);
+// ── Carousel helpers ────────────────────────────────────────────
+const stepX = () => Math.min(window.innerWidth * 0.38, 500);
 
-// ── Per-card GSAP props based on distance from active ──────────
-function cardGsapProps(offset) {
+// Returns GSAP props for a card at `offset` positions from the active card.
+function cardProps(offset) {
   const abs = Math.abs(offset);
   return {
-    x:            offset * stepX(),
-    scale:        1 - Math.min(abs, 2) * 0.16,
-    opacity:      abs === 0 ? 1 : abs === 1 ? 0.48 : 0,
-    filter:       `blur(${abs <= 1 ? abs * 2.5 : 6}px)`,
-    zIndex:       abs === 0 ? 10 : abs === 1 ? 4 : 0,
+    x:             offset * stepX(),
+    y:             0,                       // resting vertical position
+    scale:         1 - Math.min(abs, 2) * 0.16,
+    opacity:       abs === 0 ? 1 : abs === 1 ? 0.52 : 0,
+    filter:        `blur(${abs === 0 ? 0 : abs * 2}px)`,
+    zIndex:        abs === 0 ? 10 : abs === 1 ? 4 : 0,
     pointerEvents: abs <= 1 ? 'auto' : 'none',
   };
 }
 
 function CollectionPickerOverlay({ wishlists, onSelect, onClose }) {
-  const overlayRef = useRef(null);
-  const cardRefs   = useRef([]);
+  const overlayRef     = useRef(null);
+  const topBarRef      = useRef(null);
+  const bottomBarRef   = useRef(null);
+  const cardRefs       = useRef([]);
+  const entranceTlRef  = useRef(null);
+  const currentIdxRef  = useRef(0);          // always-current, avoids stale closure
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [backgrounds,  setBackgrounds]  = useState(loadBackgrounds);
   const [bgPickerOpen, setBgPickerOpen] = useState(false);
   const pickerRef = useRef(null);
 
-  // ── Position all cards (instant or animated) ─────────────────
+  // ── Center + position all cards ─────────────────────────────
   const positionAll = useCallback((index, animate) => {
     wishlists.forEach((_, i) => {
       const el = cardRefs.current[i];
       if (!el) return;
-      const props = cardGsapProps(i - index);
-      animate
-        ? gsap.to(el,  { ...props, duration: 0.52, ease: 'power3.out', overwrite: 'auto' })
-        : gsap.set(el, props);
+      const props = cardProps(i - index);
+      if (animate) {
+        gsap.to(el, { ...props, duration: 0.48, ease: 'power3.out', overwrite: true });
+      } else {
+        gsap.set(el, props);
+      }
     });
   }, [wishlists]);
 
-  // ── Initial render: set positions then fade overlay in ───────
+  // ── Entrance animation ────────────────────────────────────────
+  // Cards start below their resting position and float up.
+  // The overlay tint fades in before the cards appear.
   useLayoutEffect(() => {
-    gsap.set(overlayRef.current, { opacity: 0 });
+    const overlay  = overlayRef.current;
+    const topBar   = topBarRef.current;
+    const btmBar   = bottomBarRef.current;
+
+    // ① Start everything invisible
+    gsap.set(overlay, { opacity: 0 });
+    gsap.set([topBar, btmBar], { opacity: 0, y: 12 });
+
+    // ② Centre every card (GSAP owns the transform; CSS has no transform)
+    cardRefs.current.forEach((el) => {
+      if (el) gsap.set(el, { left: '50%', top: '50%', xPercent: -50, yPercent: -50 });
+    });
+
+    // ③ Set final coverflow positions instantly (opacity, x, scale…)
     positionAll(0, false);
-    gsap.to(overlayRef.current, { opacity: 1, duration: 0.38, ease: 'power2.out' });
+
+    // ④ Override y so cards are below their destination
+    cardRefs.current.forEach((el) => { if (el) gsap.set(el, { y: 72 }); });
+
+    // ⑤ Build entrance timeline
+    const tl = gsap.timeline();
+    entranceTlRef.current = tl;
+
+    // Overlay tint in
+    tl.to(overlay, { opacity: 1, duration: 0.3, ease: 'power2.out' });
+
+    // Visible cards float up — expo.out gives the smoothest deceleration
+    const visibleEls = wishlists
+      .map((_, i) => cardRefs.current[i])
+      .filter((el, i) => el && Math.abs(i) <= 1);   // cards within ±1 of index 0
+
+    tl.to(
+      visibleEls,
+      { y: 0, duration: 0.68, ease: 'expo.out', stagger: 0.055 },
+      '-=0.14',
+    );
+
+    // UI chrome in
+    tl.to([topBar, btmBar], { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }, '-=0.5');
+
+    return () => tl.kill();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Navigate ─────────────────────────────────────────────────
   const goTo = useCallback((next) => {
     const idx = Math.max(0, Math.min(wishlists.length - 1, next));
+    if (idx === currentIdxRef.current) return;
+
+    // Kill entrance if still running and snap everything to y:0
+    if (entranceTlRef.current) {
+      entranceTlRef.current.kill();
+      entranceTlRef.current = null;
+      cardRefs.current.forEach((el) => { if (el) gsap.set(el, { y: 0 }); });
+    }
+
+    currentIdxRef.current = idx;
     setCurrentIndex(idx);
     positionAll(idx, true);
     setBgPickerOpen(false);
   }, [wishlists.length, positionAll]);
 
-  // ── Keyboard navigation ───────────────────────────────────────
+  // ── Animated close ────────────────────────────────────────────
+  const handleClose = useCallback(() => {
+    if (entranceTlRef.current) {
+      entranceTlRef.current.kill();
+      entranceTlRef.current = null;
+    }
+
+    const idx = currentIdxRef.current;
+    const visibleEls = wishlists
+      .map((_, i) => cardRefs.current[i])
+      .filter((el, i) => el && Math.abs(i - idx) <= 1);
+
+    const tl = gsap.timeline({ onComplete: onClose });
+    tl.to(visibleEls,      { y: 72, opacity: 0, duration: 0.3, ease: 'power2.in', stagger: 0.04 });
+    tl.to(overlayRef.current, { opacity: 0, duration: 0.25, ease: 'power2.in' }, '-=0.18');
+  }, [onClose, wishlists]);
+
+  // ── Keyboard navigation ────────────────────────────────────────
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'ArrowLeft')  goTo(currentIndex - 1);
       if (e.key === 'ArrowRight') goTo(currentIndex + 1);
       if (e.key === 'Escape')     handleClose();
-      if (e.key === 'Enter' && wishlists[currentIndex]) {
-        onSelect(wishlists[currentIndex].id);
-      }
+      if (e.key === 'Enter' && wishlists[currentIndex]) onSelect(wishlists[currentIndex].id);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, goTo]);
+  }, [currentIndex, goTo, handleClose, wishlists, onSelect]);
 
-  // ── Close bg-picker when clicking outside ─────────────────────
+  // ── Close bg-picker on outside click ─────────────────────────
   useEffect(() => {
     if (!bgPickerOpen) return;
     const onDown = (e) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
-        setBgPickerOpen(false);
-      }
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) setBgPickerOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [bgPickerOpen]);
 
-  // ── Animated close ────────────────────────────────────────────
-  const handleClose = () => {
-    gsap.to(overlayRef.current, {
-      opacity: 0, duration: 0.25, ease: 'power2.in', onComplete: onClose,
-    });
-  };
-
   // ── Background helpers ────────────────────────────────────────
-  const getBg     = (id)    => backgrounds[id] || SYSTEM_BACKGROUNDS[0].value;
-  const applyBg   = (id, v) => {
+  const applyBg = (id, v) => {
     const u = { ...backgrounds, [id]: v };
     setBackgrounds(u);
     saveBackgrounds(u);
@@ -128,48 +191,58 @@ function CollectionPickerOverlay({ wishlists, onSelect, onClose }) {
 
   const active = wishlists[currentIndex];
 
-  // ── Render ────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────
   return (
-    <div className={styles.overlay} ref={overlayRef}>
+    // Clicking the backdrop (not the content) closes the overlay
+    <div className={styles.overlay} ref={overlayRef} onClick={handleClose}>
 
-      {/* ── Top bar ─────────────────────────────────── */}
-      <div className={styles.topBar}>
-        <p className={styles.topLabel}>
+      {/* ── Top bar ────────────────────────────────────── */}
+      <div
+        className={styles.topBar}
+        ref={topBarRef}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className={styles.counter}>
           {wishlists.length > 0 ? `${currentIndex + 1} / ${wishlists.length}` : ''}
-        </p>
-        <h2 className={styles.topTitle}>Suas Coleções</h2>
+        </span>
+        <h2 className={styles.title}>Suas Coleções</h2>
         <button className={styles.closeBtn} onClick={handleClose} aria-label="Fechar">✕</button>
       </div>
 
-      {/* ── Carousel area ────────────────────────────── */}
+      {/* ── Carousel area ──────────────────────────────── */}
       <div className={styles.carouselArea}>
-        {/* Left arrow */}
+
+        {/* Arrows — stop propagation so they don't close the overlay */}
         <button
           className={`${styles.arrow} ${styles.arrowLeft} ${currentIndex === 0 ? styles.arrowHidden : ''}`}
-          onClick={() => goTo(currentIndex - 1)}
+          onClick={(e) => { e.stopPropagation(); goTo(currentIndex - 1); }}
           aria-label="Anterior"
-          tabIndex={currentIndex === 0 ? -1 : 0}
-        >
-          ‹
-        </button>
+        >‹</button>
 
-        {/* Cards track */}
-        <div className={styles.track}>
-          {wishlists.length === 0 ? (
-            <div className={styles.empty}>Nenhuma coleção ainda.</div>
-          ) : (
-            wishlists.map((wishlist, i) => (
+        {/* Cards — absolutely positioned and centred via GSAP */}
+        {wishlists.length === 0 ? (
+          <p className={styles.empty}>Nenhuma coleção ainda.</p>
+        ) : (
+          wishlists.map((wishlist, i) => {
+            const savedBg = backgrounds[wishlist.id];
+            const bgInline = resolvedBgStyle(savedBg); // null → pure glass
+
+            return (
               <div
                 key={wishlist.id}
                 className={styles.card}
                 ref={(el) => (cardRefs.current[i] = el)}
-                style={bgStyle(getBg(wishlist.id))}
-                onClick={() => i !== currentIndex && goTo(i)}
+                style={bgInline || undefined}            // undefined → CSS glass default
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (i !== currentIndex) goTo(i);
+                }}
                 role={i !== currentIndex ? 'button' : undefined}
-                aria-label={i !== currentIndex ? `Ir para ${wishlist.artistName}` : undefined}
+                aria-label={i !== currentIndex ? `Selecionar ${wishlist.artistName}` : undefined}
               >
-                <div className={styles.cardGlow} />
+                {/* Bottom gradient so text stays legible over any background */}
                 <div className={styles.cardOverlay} />
+
                 <div className={styles.cardContent}>
                   {wishlist.artistPhotoUrl && (
                     <img
@@ -185,30 +258,26 @@ function CollectionPickerOverlay({ wishlists, onSelect, onClose }) {
                   </p>
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            );
+          })
+        )}
 
-        {/* Right arrow */}
         <button
-          className={`${styles.arrow} ${styles.arrowRight} ${currentIndex === wishlists.length - 1 ? styles.arrowHidden : ''}`}
-          onClick={() => goTo(currentIndex + 1)}
+          className={`${styles.arrow} ${styles.arrowRight} ${currentIndex >= wishlists.length - 1 ? styles.arrowHidden : ''}`}
+          onClick={(e) => { e.stopPropagation(); goTo(currentIndex + 1); }}
           aria-label="Próximo"
-          tabIndex={currentIndex === wishlists.length - 1 ? -1 : 0}
-        >
-          ›
-        </button>
+        >›</button>
       </div>
 
-      {/* ── Bottom bar ───────────────────────────────── */}
+      {/* ── Bottom action bar ───────────────────────────── */}
       {active && (
-        <div className={styles.bottomBar}>
+        <div
+          className={styles.bottomBar}
+          ref={bottomBarRef}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className={styles.actionRow}>
-            {/* Open button */}
-            <button
-              className={styles.openBtn}
-              onClick={() => onSelect(active.id)}
-            >
+            <button className={styles.openBtn} onClick={() => onSelect(active.id)}>
               Abrir Coleção
             </button>
 
@@ -216,12 +285,10 @@ function CollectionPickerOverlay({ wishlists, onSelect, onClose }) {
             <div className={styles.bgWrapper} ref={pickerRef}>
               <button
                 className={`${styles.bgBtn} ${bgPickerOpen ? styles.bgBtnActive : ''}`}
-                onClick={() => setBgPickerOpen(o => !o)}
+                onClick={() => setBgPickerOpen((o) => !o)}
                 title="Alterar background"
                 aria-label="Alterar background"
-              >
-                🎨
-              </button>
+              >🎨</button>
 
               {bgPickerOpen && (
                 <div className={styles.bgPicker}>
